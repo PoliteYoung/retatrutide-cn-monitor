@@ -4,7 +4,13 @@ on:
   schedule:
     # 每周三 18:30（北京时间）= 10:30（UTC）
     - cron: "30 10 * * 3"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only print the report, do not send DingTalk message"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -25,4 +31,5 @@ jobs:
         env:
           # 不要把 webhook/token 写进仓库，请在仓库 Settings → Secrets and variables → Actions 里添加
           DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
+          DINGTALK_DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
         run: node ./src/index.js
