@@ -31,5 +31,7 @@ jobs:
         env:
           # 不要把 webhook/token 写进仓库，请在仓库 Settings → Secrets and variables → Actions 里添加
           DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
+          WPUSHER_WEBHOOK_URL: ${{ secrets.WPUSHER_WEBHOOK_URL }}
+          WPUSHER_AUTHORIZATION: ${{ secrets.WPUSHER_AUTHORIZATION }}
           DINGTALK_DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
         run: node ./src/index.js
