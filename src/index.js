@@ -364,48 +364,13 @@ async function sendToDingTalkMarkdown({ webhook, title, text }) {
   return raw;
 }
 
-function buildWpusherUrl({ webhookUrl, title, content }) {
-  if (webhookUrl.includes("$title") || webhookUrl.includes("$content")) {
-    return webhookUrl
-      .replaceAll("$title", encodeURIComponent(title))
-      .replaceAll("$content", encodeURIComponent(content));
-  }
-
-  const url = new URL(webhookUrl);
-  url.searchParams.set("title", title);
-  url.searchParams.set("content", content);
-  return url.toString();
-}
-
-async function sendToWpusher({ webhookUrl, authorization, title, text }) {
-  const url = buildWpusherUrl({ webhookUrl, title, content: text });
-  const headers = {
-    "content-type": "application/json"
-  };
-  if (authorization) headers.authorization = authorization;
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ title, content: text })
-  });
-
-  const raw = await res.text().catch(() => "");
-  if (!res.ok) {
-    throw new Error(`Wpusher webhook failed: HTTP ${res.status} ${raw}`);
-  }
-  return raw;
-}
-
 async function main() {
   const dingtalkWebhook = process.env.DINGTALK_WEBHOOK;
-  const wpusherWebhook = process.env.WPUSHER_WEBHOOK_URL;
-  const wpusherAuthorization = process.env.WPUSHER_AUTHORIZATION;
   const dryRun = process.env.DINGTALK_DRY_RUN === "1";
 
-  if (!dingtalkWebhook && !wpusherWebhook && !dryRun) {
+  if (!dingtalkWebhook && !dryRun) {
     throw new Error(
-      "Missing webhook configuration. Set DINGTALK_WEBHOOK and/or WPUSHER_WEBHOOK_URL as GitHub Actions secrets."
+      "Missing webhook configuration. Set DINGTALK_WEBHOOK as a GitHub Actions secret."
     );
   }
 
@@ -434,22 +399,8 @@ async function main() {
     return;
   }
 
-  const sends = [];
-  if (dingtalkWebhook) {
-    sends.push(sendToDingTalkMarkdown({ webhook: dingtalkWebhook, ...report }));
-  }
-  if (wpusherWebhook) {
-    sends.push(
-      sendToWpusher({
-        webhookUrl: wpusherWebhook,
-        authorization: wpusherAuthorization,
-        ...report
-      })
-    );
-  }
-
-  await Promise.all(sends);
-  console.log(`Sent ${sends.length} webhook report(s) OK.`);
+  await sendToDingTalkMarkdown({ webhook: dingtalkWebhook, ...report });
+  console.log("Sent DingTalk webhook report OK.");
 }
 
 main().catch((err) => {
