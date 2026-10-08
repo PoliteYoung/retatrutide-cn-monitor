@@ -33,3 +33,16 @@ jobs:
           DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
           DINGTALK_DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
         run: node ./src/index.js
+
+  # GitHub 会在仓库连续 60 天无活动后自动停用定时任务（disabled_inactivity）。
+  # 每次运行时通过 API 重新启用本工作流，以重置该计时器，无需产生提交。
+  keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Keep scheduled workflow alive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/weekly-report.yml/enable"
