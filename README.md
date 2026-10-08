@@ -51,3 +51,9 @@ gh secret set DINGTALK_WEBHOOK
 - 辅助检查公开网页与礼来投资者新闻搜索。
 - 若官方站点触发访问验证，报告会标记为不可解析；这类情况不自动视为“无上市”，只说明本次自动抓取没有得到可确认线索。
 - 结论是线索监测，不等同于药品注册结论；最终请以 NMPA/CDE 数据库、公告及企业官方披露为准。
+
+### 防止定时任务被自动停用
+
+GitHub 会在公开仓库连续 60 天无活动后自动停用定时任务（Actions 页面显示 “This scheduled workflow is disabled because there hasn't been activity in this repository for at least 60 days”）。工作流中的 `keepalive` 任务会在每次定时运行时调用 API 重新启用自身，从而重置计时器。
+
+如果已经被停用：进入仓库 Actions → `retatrutide-cn-weekly-report` → 点击 **Enable workflow** 即可恢复。
